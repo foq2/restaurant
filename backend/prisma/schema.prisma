@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  username  String     @unique
+  password  String
+  name      String
+  email     String     @unique
+  phone     String
+  role      Role       @default(EMPLOYEE)
+  createdAt DateTime   @default(now())
+  Order     Order[]
+  Bill      Bill[]
+}
+
+model Food {
+  id          Int           @id @default(autoincrement())
+  name        String
+  price       Int
+  description String?
+  orderDetail OrderDetail[]
+}
+
+model Order {
+  id          Int           @id @default(autoincrement())
+  description String?
+  status      OrderStatus   @default(SERVED)
+  createAt    DateTime      @default(now())
+  userId      Int
+  user        User          @relation(fields: [userId], references: [id])
+  orderDetail OrderDetail[]
+  Bill        Bill[]
+}
+
+model OrderDetail {
+  id       Int   @id @default(autoincrement())
+  quantity Int
+  orderId  Int
+  order    Order @relation(fields: [orderId], references: [id])
+  foodId   Int
+  food     Food  @relation(fields: [foodId], references: [id])
+}
+
+model Bill {
+  id          Int      @id @default(autoincrement())
+  createAt    DateTime @default(now())
+  description String?
+  orderId     Int
+  order       Order    @relation(fields: [orderId], references: [id])
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  MANAGER
+  EMPLOYEE
+}
+
+enum OrderStatus {
+  SERVED
+  COMPLETED
+}
