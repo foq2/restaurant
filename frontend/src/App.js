@@ -16,6 +16,7 @@ import Login from "./pages/login";
 import { logout } from "./api/auth";
 import { Button } from "@mui/material";
 import { ExitToApp } from "@mui/icons-material";
+import OrderDetail from "./pages/orderDetail";
 import "./App.css";
 
 // Tạo component PrivateRoute để bảo vệ các route yêu cầu đăng nhập
@@ -136,6 +137,17 @@ const App = () => {
               <div>
                 <NavBar />
                 <Order />
+              </div>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/order/:orderId"
+          element={
+            <PrivateRoute>
+              <div>
+                <NavBar />
+                <OrderDetail />
               </div>
             </PrivateRoute>
           }

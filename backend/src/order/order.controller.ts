@@ -8,6 +8,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
+import { CreateOrderDto, UpdateOrderDto } from './order.dto';
 
 @Controller('order')
 export class OrderController {
@@ -21,26 +22,12 @@ export class OrderController {
     return this.orderService.getOne(id);
   }
   @Post()
-  async create(
-    @Body()
-    body: {
-      userId: string;
-      description: string;
-      status: string;
-    },
-  ) {
-    return this.orderService.create(body.userId, body.description, body.status);
+  async create(@Body() dto: CreateOrderDto) {
+    return this.orderService.create(dto);
   }
   @Put(':id')
-  async update(
-    @Param('id') id: string,
-    @Body()
-    body: {
-      description: string;
-      status: string;
-    },
-  ) {
-    return this.orderService.update(id, body.description, body.status);
+  async update(@Param('id') id: string, @Body() dto: UpdateOrderDto) {
+    return this.orderService.update(id, dto);
   }
   @Delete(':id')
   async delete(@Param('id') id: string) {

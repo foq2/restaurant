@@ -1,17 +1,21 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:4000/auth/";
+const axiosInstance = axios.create({
+  baseURL: "http://localhost:4000/auth/",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+});
 
 export async function login(user) {
-  return await axios
-    .post(API_URL + "login", user, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-    .then((response) => {
-      localStorage.setItem("user", JSON.stringify(response.data));
-    });
+  try {
+    const response = await axiosInstance.post("login", user);
+    localStorage.setItem("user", JSON.stringify(response.data));
+  } catch (error) {
+    console.error("Login failed:", error);
+    throw error; // Re-throw the error to handle it in the calling function
+  }
 }
 
 export function logout() {
@@ -19,13 +23,11 @@ export function logout() {
 }
 
 export async function register(user) {
-  return await axios
-    .post(API_URL + "register", user, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-    .then((response) => {
-      localStorage.setItem("user", JSON.stringify(response.data));
-    });
+  try {
+    const response = await axiosInstance.post("register", user);
+    localStorage.setItem("user", JSON.stringify(response.data));
+  } catch (error) {
+    console.error("Registration failed:", error);
+    throw error; // Re-throw the error to handle it in the calling function
+  }
 }

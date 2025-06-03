@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Role } from '../enum';
+import { CreateUserDto, UpdateUserDto } from './user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -15,7 +16,6 @@ export class UserService {
         email: true,
         phone: true,
         role: true,
-        createdAt: true,
       },
     });
     return users;
@@ -33,63 +33,61 @@ export class UserService {
     return user;
   }
 
-  async create(
-    username: string,
-    password: string,
-    name: string,
-    email: string,
-    phone: string,
-  ) {
-    const existing = await this.prismaService.user.findUnique({
-      where: {
-        username: username,
-      },
-    });
-    if (existing) {
-      throw new BadRequestException('Username đã tồn tại');
+  async create(dto: CreateUserDto) {
+    try {
+      const existing = await this.prismaService.user.findFirst({
+        where: {
+          OR: [
+            {
+              username: dto.username,
+            },
+            {
+              email: dto.email,
+            },
+          ],
+        },
+      });
+      if (existing) {
+        throw new BadRequestException('Username hoặc Email đã tồn tại');
+      }
+      dto.password = await bcrypt.hash(
+        dto.password,
+        Number(process.env.SALROUND) || 10,
+      );
+      const user = await this.prismaService.user.create({
+        data: dto,
+      });
+      return user;
+    } catch (error) {
+      console.error('Error during user creation:', error);
+      throw new BadRequestException('Tạo người dùng không thành công');
     }
-    const user = await this.prismaService.user.create({
-      data: {
-        username: username,
-        password: password,
-        name: name,
-        email: email,
-        phone: phone,
-      },
-    });
-    return user;
   }
 
-  async update(
-    id: string,
-    username: string,
-    password: string,
-    name: string,
-    email: string,
-    phone: string,
-    role: string,
-  ) {
+  async update(id: string, dto: UpdateUserDto) {
     const existing = await this.prismaService.user.findUnique({
       where: {
         id: Number(id),
       },
     });
     if (!existing) {
-      throw new BadRequestException('Username không tồn tại');
+      throw new BadRequestException('User không tồn tại');
     }
-    const userRole = Role[role as keyof typeof Role];
+    if (dto.password) {
+      dto.password = await bcrypt.hash(
+        dto.password,
+        Number(process.env.SALROUND),
+      );
+    }
+    const data = Object.entries(dto).filter(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ([_, value]) => value !== undefined && value !== null,
+    );
     const user = await this.prismaService.user.update({
       where: {
         id: Number(id),
       },
-      data: {
-        username: username,
-        password: password,
-        name: name,
-        email: email,
-        phone: phone,
-        role: userRole,
-      },
+      data: Object.fromEntries(data),
     });
     return user;
   }

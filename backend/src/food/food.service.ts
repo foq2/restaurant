@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateFoodDto, UpdateFoodDto } from './food.dto';
 
 @Injectable()
 export class FoodService {
@@ -28,18 +29,14 @@ export class FoodService {
     return food;
   }
 
-  async create(name: string, price: number, description: string) {
+  async create(dto: CreateFoodDto) {
     const food = await this.prismaService.food.create({
-      data: {
-        name: name,
-        price: price,
-        description: description,
-      },
+      data: dto,
     });
     return food;
   }
 
-  async update(id: string, name: string, price: number, description: string) {
+  async update(id: string, dto: UpdateFoodDto) {
     const existing = await this.prismaService.food.findUnique({
       where: {
         id: Number(id),
@@ -52,11 +49,7 @@ export class FoodService {
       where: {
         id: Number(id),
       },
-      data: {
-        name: name,
-        price: price,
-        description: description,
-      },
+      data: dto,
     });
     return food;
   }

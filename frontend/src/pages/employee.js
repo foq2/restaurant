@@ -166,6 +166,7 @@ export default function Employee() {
     // Create a copy without password to avoid sending it back
     const employeeWithoutPassword = { ...employee, password: "" };
     setSelectedEmployee(employeeWithoutPassword);
+    console.log("Selected Employee for Edit:", employeeWithoutPassword);
     setIsEditDialogOpen(true);
   };
 
@@ -334,6 +335,7 @@ export default function Employee() {
               setNewEmployee((prev) => ({ ...prev, phone: e.target.value }))
             }
             margin="normal"
+            required
           />
           <TextField
             fullWidth
@@ -344,6 +346,7 @@ export default function Employee() {
               setNewEmployee((prev) => ({ ...prev, email: e.target.value }))
             }
             margin="normal"
+            required
           />
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>

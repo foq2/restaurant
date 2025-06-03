@@ -2,7 +2,10 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:4000/order-detail",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
 });
 
 export async function getOrderDetailByOrderId(id) {

@@ -1,23 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateOrderDetailDto, UpdateOrderDetailDto } from './order-detail.dto';
 
 @Injectable()
 export class OrderDetailService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(orderId: string, foodId: string, quantity: number) {
-    console.log('Creating order detail:', {
-      orderId,
-      foodId,
-      quantity,
-    });
+  async create(dto: CreateOrderDetailDto) {
     try {
       const orderDetail = await this.prismaService.orderDetail.create({
-        data: {
-          orderId: Number(orderId),
-          foodId: Number(foodId),
-          quantity: quantity,
-        },
+        data: dto,
       });
       return orderDetail;
     } catch (error) {
@@ -35,14 +27,12 @@ export class OrderDetailService {
     return orderDetails;
   }
 
-  async update(id: string, quantity: number) {
+  async update(id: string, dto: UpdateOrderDetailDto) {
     const orderDetail = await this.prismaService.orderDetail.update({
       where: {
         id: Number(id),
       },
-      data: {
-        quantity: { set: quantity },
-      },
+      data: dto,
     });
     return orderDetail;
   }

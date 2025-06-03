@@ -147,6 +147,7 @@ export default function Food() {
 
   const openEditDialog = (food) => {
     setSelectedFood({ ...food });
+    console.log("Selected food for edit:", selectedFood);
     setIsEditDialogOpen(true);
   };
 

@@ -8,6 +8,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { CreateUserDto, UpdateUserDto } from './user.dto';
 
 @Controller('user')
 export class UserController {
@@ -22,46 +23,13 @@ export class UserController {
     return this.userService.getOne(id);
   }
   @Post()
-  async create(
-    @Body()
-    body: {
-      username: string;
-      password: string;
-      name: string;
-      email: string;
-      phone: string;
-    },
-  ) {
-    return this.userService.create(
-      body.username,
-      body.password,
-      body.name,
-      body.email,
-      body.phone,
-    );
+  async create(@Body() dto: CreateUserDto) {
+    return this.userService.create(dto);
   }
   @Put(':id')
-  async update(
-    @Param('id') id: string,
-    @Body()
-    body: {
-      username: string;
-      password: string;
-      name: string;
-      email: string;
-      phone: string;
-      role: string;
-    },
-  ) {
-    return this.userService.update(
-      id,
-      body.username,
-      body.password,
-      body.name,
-      body.email,
-      body.phone,
-      body.role,
-    );
+  async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    console.log('Updating user with ID:', id, 'with data:', dto);
+    return this.userService.update(id, dto);
   }
   @Delete(':id')
   async delete(@Param('id') id: string) {

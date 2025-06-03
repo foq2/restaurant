@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { OrderStatus } from '../enum';
+import { CreateOrderDto, UpdateOrderDto } from './order.dto';
 @Injectable()
 export class OrderService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -46,19 +46,13 @@ export class OrderService {
     }
     return order;
   }
-  async create(userId: string, description: string, status: string) {
-    const orderStatus = OrderStatus[status as keyof typeof OrderStatus];
+  async create(dto: CreateOrderDto) {
     const order = await this.prismaService.order.create({
-      data: {
-        description: description,
-        status: orderStatus,
-        createAt: new Date(),
-        userId: Number(userId),
-      },
+      data: dto,
     });
     return order;
   }
-  async update(id: string, description: string, status: string) {
+  async update(id: string, dto: UpdateOrderDto) {
     const existing = await this.prismaService.order.findUnique({
       where: {
         id: Number(id),
@@ -67,15 +61,11 @@ export class OrderService {
     if (!existing) {
       throw new BadRequestException('Order không tồn tại');
     }
-    const orderStatus = OrderStatus[status as keyof typeof OrderStatus];
     const order = await this.prismaService.order.update({
       where: {
         id: Number(id),
       },
-      data: {
-        description: description,
-        status: orderStatus,
-      },
+      data: dto,
     });
     return order;
   }
