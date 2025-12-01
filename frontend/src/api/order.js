@@ -8,8 +8,10 @@ const axiosInstance = axios.create({
   },
 });
 
-export async function getOrders() {
-  return await axiosInstance.get("/");
+export async function getOrders(searchTerm, status, date) {
+  return await axiosInstance.get(
+    `/?searchTerm=${searchTerm}&status=${status}&date=${date}`
+  );
 }
 
 export async function getOrder(id) {

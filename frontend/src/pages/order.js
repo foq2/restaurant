@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -86,19 +86,33 @@ export default function Order() {
     message: "",
     severity: "success",
   });
+  const [filterStatus, setFilterStatus] = useState("ALL");
+  const [filterDate, setFilterDate] = useState("ALL");
 
   // Status options
   const orderStatuses = ["SERVED", "COMPLETED"];
+  const formatDate = (dateString) => {
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      // hour: "2-digit",
+      // minute: "2-digit",
+    };
+    return new Date(dateString).toLocaleDateString("vi-VN", options);
+  };
+  const orderDates = [
+    ...orders
+      .map((order) => formatDate(order.createAt))
+      .filter((date, index, self) => self.indexOf(date) === index),
+  ];
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  async function fetchOrders() {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await getOrders();
+      const response = await getOrders(searchTerm, filterStatus, filterDate);
       setOrders(response.data);
+      console.log(response.data);
     } catch (error) {
       setAlert({
         open: true,
@@ -108,14 +122,20 @@ export default function Order() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [searchTerm, filterStatus, filterDate]);
 
-  const filteredOrders = orders.filter(
-    (order) =>
-      order.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.id?.toString().includes(searchTerm) ||
-      order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  // const filteredOrders = orders.filter(
+  //   (order) =>
+  //     (order.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       order.id?.toString().includes(searchTerm) ||
+  //       order.user?.name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+  //     (filterStatus === "ALL" || order.status === filterStatus) &&
+  //     (filterDate === "ALL" || formatDate(order.createAt) === filterDate)
+  // );
 
   const handleAddOrder = async () => {
     try {
@@ -193,17 +213,6 @@ export default function Order() {
     navigate(`/order/${orderId}`);
   };
 
-  const formatDate = (dateString) => {
-    const options = {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    };
-    return new Date(dateString).toLocaleDateString("vi-VN", options);
-  };
-
   // Main render for Order list
   return (
     <Box sx={{ p: 3 }}>
@@ -245,13 +254,49 @@ export default function Order() {
             size="small"
           />
         </Box>
+        <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
+          <FormControl sx={{ mr: 2 }}>
+            <InputLabel>Trạng thái</InputLabel>
+            <Select
+              value={filterStatus}
+              label="Trạng thái"
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <MenuItem value="ALL">Tất cả</MenuItem>
+              {orderStatuses.map((status) => (
+                <MenuItem key={status} value={status}>
+                  {status === "SERVED"
+                    ? "Đang phục vụ"
+                    : status === "COMPLETED"
+                    ? "Đã hoàn thành"
+                    : status}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl sx={{ mr: 2 }}>
+            <InputLabel>Ngày tạo</InputLabel>
+            <Select
+              value={filterDate}
+              label="Ngày tạo"
+              onChange={(e) => setFilterDate(e.target.value)}
+            >
+              <MenuItem value="ALL">Tất cả</MenuItem>
+              {orderDates.map((date) => (
+                <MenuItem key={date} value={date}>
+                  {date}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
       </Paper>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
           <CircularProgress />
         </Box>
-      ) : filteredOrders.length > 0 ? (
+      ) : orders.length > 0 ? (
         <TableContainer component={Paper} sx={{ mb: 3 }}>
           <Table>
             <TableHead>
@@ -265,7 +310,7 @@ export default function Order() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredOrders.map((order) => (
+              {orders.map((order) => (
                 <TableRow key={order.id} hover>
                   <TableCell>#{order.id}</TableCell>
                   <TableCell>{order.user?.name || "Không xác định"}</TableCell>
